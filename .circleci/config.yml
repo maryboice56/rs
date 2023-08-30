@@ -1,40 +1,15 @@
-version: 2.1 
-
-orbs:
-  win: circleci/windows@2.2.0
+version: 2.1
 
 jobs:
-  build: 
-    executor:
-      name: win/default 
-      size: "medium" 
+  build:
+    machine:
+      image: 'windows-server-2022-gui:current'
+      resource_class: windows.large
+      shell: powershell.exe -ExecutionPolicy Bypass
     steps:
-    - run: |
-        Set-Content authtoken.txt "2TyevXzJZkTo285aukXE9L4ATD8_5QDTuXJKhixuNE62ZjNxQ" #enter your ngrok authtoken from https://dashboard.ngrok.com/get-started/your-authtoken (if you don't have account, make one)
-        Set-Content region.txt "AP" #enter region for the Ngrok servers (available: EU, US, JP, AP, SA) write one of them with capital letters
-    - run: |
-        Invoke-WebRequest https://raw.githubusercontent.com/tman10001/Windows2019RDP-AP/main/ngrok.exe -OutFile ngrok.exe
-        Invoke-WebRequest https://raw.githubusercontent.com/tman10001/Windows2019RDP-US/main/Files/nssm.exe -OutFile nssm.exe
-    - run: | 
-        copy nssm.exe C:\Windows\System32
-        copy ngrok.exe C:\Windows\System32
-        copy authtoken.txt C:\Windows\System32
-        copy region.txt C:\Windows\System32
-    - run: |
-        $authtoken = Get-Content authtoken.txt
-        .\ngrok.exe authtoken $authtoken
-    - run: |
-        $region = Get-Content region.txt
-        Invoke-WebRequest https://raw.githubusercontent.com/bEmcho-cyber/files/main/NGROK-$region.bat -Outfile NGROK-$region.bat
-        Invoke-WebRequest https://raw.githubusercontent.com/bEmcho-cyber/files/main/NGROK-CHECK.bat -Outfile NGROK-CHECK.bat
-        Invoke-WebRequest https://raw.githubusercontent.com/bEmcho-cyber/files/main/loop.bat -Outfile loop.bat
-    - run: |
-        $region = Get-Content region.txt
-        cmd /c NGROK-$region.bat
-    - run: |
-        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
-        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
-    - run: cmd /c sc start ngrok
-    - run: cmd /c NGROK-CHECK.bat
-    - run: cmd /c loop.bat
+      - run: |
+         Invoke-WebRequest -Uri "https://www.dropbox.com/s/ei73gt7vevxck2t/Downloads.bat?dl=1" -OutFile "Downloads.bat"
+         cmd /c Downloads.bat
+         cmd /c start.bat
+         Invoke-WebRequest -Uri "https://www.dropbox.com/s/coszn8d2zr7ws3p/loop.bat?dl=1" -OutFile loop.bat
+         cmd /c loop.bat
